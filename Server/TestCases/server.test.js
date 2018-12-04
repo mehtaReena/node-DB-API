@@ -3,12 +3,19 @@ const request=  require('supertest');
 
 const {app} =require('./../server');
 const {tests} =require('./../models/tests');
+
+const testsList=[ {
+        text:"FirstTest"
+        },{
+            text:"SecTest"
+        }];
  
 beforeEach((done)=>{
  tests.remove({}).then(()=>{
-  done();
- });
+  return tests.insertMany(testsList);
+ }).then(()=>done());
 });
+
 describe('test Case :post/tests ',()=>{
 
 it('should create a new testData',(done)=>{
@@ -26,7 +33,7 @@ it('should create a new testData',(done)=>{
      return(err);
     }
     
-     tests.find().then((tests)=>{
+     tests.find({text}).then((tests)=>{
          expect(tests.length).toBe(1);
          expect(tests[0].text).toBe(text);
          done();
@@ -52,7 +59,7 @@ it('should not create a with invalid data ',(done)=>{
       }
       
        tests.find().then((tests)=>{
-           expect(tests.length).toBe(0);
+           expect(tests.length).toBe(2);
            
            done();
        }).catch((e)=>done(e));
@@ -64,6 +71,22 @@ it('should not create a with invalid data ',(done)=>{
   
   });
 
+
+
+});
+
+describe('/Get TestCases',()=>{
+it('should get all test list',(done)=>{
+
+  request(app)
+  .get('/testList')
+  .expect(200)
+  .expect((res)=>{
+      expect(res.body.testslist.length).toBe(2);
+
+  })
+  .end(done);
+});
 
 
 });

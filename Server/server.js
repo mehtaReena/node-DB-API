@@ -27,7 +27,7 @@ app.post('/tests', (req, res) => {
 
 
 
-app.get('/testlist',(req,res)=>{
+app.get('/testList',(req,res)=>{
  
   tests.find().then((testslist)=>{
    res.send({testslist});
