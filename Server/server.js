@@ -1,5 +1,7 @@
+
 var express = require('express');
 var bodyParser = require('body-parser');
+const {ObjectID}=require('mongodb');
 
 var { mongoose } = require('./db/mongoose');
 var { tests } = require('./models/tests');
@@ -38,11 +40,45 @@ app.get('/testList',(req,res)=>{
 
 });
 
+app.get('/getTestByID/:id',(req,res)=>{
+  var testid=req.params.id ;
+   if(!ObjectID.isValid(testid)){
+    return res.status(404).send('Invalid TestID!');
+   }
+   else{
+    tests.findById(testid).then((data)=>{
+     if(!data){
+      return res.status(404).send('TestID not found!');
+     }
+     else{
+       res.send(data);
+     }
+
+    },(err)=>{
+
+      res.status(400).send(err);
+    });
+
+   }
+
+
+
+
+},(err)=>{
+
+
+
+});
+
+
+
 app.listen(3000, () => {
 
   console.log("Started on port 3000! Welcome")
 
 });
+
+
 
 
 module.exports = {
