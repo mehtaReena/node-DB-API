@@ -102,7 +102,8 @@ describe('Test Case :/getTestByID/:id',()=>{
          .get(`/getTestByID/${testsList[0]._id.toHexString()}`)         
          .expect(200)
          .expect((res)=>{
-            expect(res.body.text).toBe(testsList[0].text);
+            expect(res.body.testData.text).toBe(testsList[0].text);
+           //console.log(res);
          })
          .end(done);
 
@@ -131,11 +132,37 @@ describe('Test Case :/getTestByID/:id',()=>{
     .expect(404)
     
     .end(done);
+});  
+
 });
 
+describe('Get Cases :/DeleteTest/:id',()=>{
+ 
+    it('should delete TestData for given ID',(done)=>{
+        var testid=testsList[1]._id.toHexString();
 
+        request(app)
+        .delete(`/removeTest/${testid}`)
+        .expect(200)
+        .expect((res)=>{
+          // expect(res.body._id).toBe(testid);
+        var testid=testsList[1]._id.toHexString();
+           console.log(res.body._id  )
+        })
+        .end((err,res)=>{
+            if(err){
+            return done(err);
+            }
+          
+              tests.findById(testid).then((data)=>{
+              expect(data).toNotExist();
+              done();
+           }).catch((e)=>done(e));
+            
+       
+        });
 
-
+    });
     
 
 
