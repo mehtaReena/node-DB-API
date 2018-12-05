@@ -9,7 +9,7 @@ var tests =mongoose.model('tests',{
     },
     completed:{
       type:Boolean,
-      default:true
+      default:false
     },
     completedAt:{
       type:Date,

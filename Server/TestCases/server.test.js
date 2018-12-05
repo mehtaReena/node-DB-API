@@ -10,7 +10,9 @@ const testsList= [{
     text: 'First test todo'
   }, {
     _id: new ObjectID(),
-    text: 'Second test todo'
+    text: 'Second test todo',
+    completed:true,
+    completedAt: null
   }];
  
 beforeEach((done)=>{
@@ -145,8 +147,7 @@ describe('Get Cases :/DeleteTest/:id',()=>{
         .delete(`/removeTest/${testid}`)
         .expect(200)
         .expect((res)=>{
-          // expect(res.body._id).toBe(testid);
-        var testid=testsList[1]._id.toHexString();
+          // expect(res.body._id).toBe(testid);        
            console.log(res.body._id  )
         })
         .end((err,res)=>{
@@ -164,6 +165,35 @@ describe('Get Cases :/DeleteTest/:id',()=>{
 
     });
     
+
+
+});
+
+describe('Test Case /Updatetest/:id',()=>{
+
+it('should be update test for given Testid',(done)=>{
+    var testid=testsList[0]._id.toHexString();
+    var text="updated";
+    var dt=Date.now();
+
+    request(app)
+    .patch(`/Updatetest/${testid}`)
+    .send({
+        text: text,
+        completed:true
+    })
+    .expect(200)
+    .expect((res)=>{        
+        expect(res.body.text).toBe('Updated');
+        expect(res.body.completed).toBe(true);
+        expect(res.body.completedAt).toBe(dt);
+
+    
+    })
+ 
+    .end(done);
+
+});
 
 
 });
