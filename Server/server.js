@@ -70,6 +70,31 @@ app.get('/getTestByID/:id',(req,res)=>{
 
 });
 
+app.delete('/removeTest/:id',(req,res)=>{
+  console.log(req.params.id );
+  var testid=req.params.id ;
+  if(!ObjectID.isValid(testid)){
+   return res.status(404).send('Invalid TestID!');
+  }
+  else{
+
+  tests.findByIdAndRemove(testid).then((result)=>{
+      if(!result){
+        return res.status(404).send('Id not found !');
+      }
+      else{
+
+        return res.status(200).send(JSON.stringify(result,undefined,2));
+      }
+
+  },(err)=>{
+    res.status(400).send(err);
+  });
+
+  }
+
+
+});
 
 
 app.listen(3000, () => {
