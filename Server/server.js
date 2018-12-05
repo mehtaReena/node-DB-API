@@ -46,12 +46,12 @@ app.get('/getTestByID/:id',(req,res)=>{
     return res.status(404).send('Invalid TestID!');
    }
    else{
-    tests.findById(testid).then((data)=>{
-     if(!data){
+    tests.findById(testid).then((testData)=>{
+     if(!testData){
       return res.status(404).send('TestID not found!');
      }
      else{
-       res.send(data);
+       res.send(testData);
      }
 
     },(err)=>{

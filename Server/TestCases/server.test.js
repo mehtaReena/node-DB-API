@@ -1,14 +1,17 @@
 const expect =require('expect');
 const request=  require('supertest');
+const {ObjectID}=require('mongodb');
 
 const {app} =require('./../server');
 const {tests} =require('./../models/tests');
 
-const testsList=[ {
-        text:"FirstTest"
-        },{
-            text:"SecTest"
-        }];
+const testsList= [{
+    _id: new ObjectID(),
+    text: 'First test todo'
+  }, {
+    _id: new ObjectID(),
+    text: 'Second test todo'
+  }];
  
 beforeEach((done)=>{
  tests.remove({}).then(()=>{
@@ -87,6 +90,53 @@ it('should get all test list',(done)=>{
   })
   .end(done);
 });
+
+
+});
+
+
+describe('Test Case :/getTestByID/:id',()=>{
+    
+    it('it should return testData of given ID',(done)=>{
+         request(app)
+         .get(`/getTestByID/${testsList[0]._id.toHexString()}`)         
+         .expect(200)
+         .expect((res)=>{
+            expect(res.body.text).toBe(testsList[0].text);
+         })
+         .end(done);
+
+
+
+    });
+
+
+
+    it('it should return 404 if test not for  given ID',(done)=>{
+        var hexid= new ObjectID().toHexString();
+        request(app)
+        .get(`/getTestByID/${hexid}`)         
+        .expect(404) 
+           
+        .end(done);
+
+
+
+   });
+
+
+   it('it should return 404 nonObject Id ',(done)=>{
+    request(app)
+    .get(`/getTestByID/123`)         
+    .expect(404)
+    
+    .end(done);
+});
+
+
+
+
+    
 
 
 });
