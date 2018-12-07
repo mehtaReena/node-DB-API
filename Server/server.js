@@ -120,6 +120,28 @@ tests.findByIdAndUpdate(testid ,{$set:body},{new:true}).then((Updatedresult)=>{
 
 });
 
+/*   Post for Users....      */
+
+app.post('/user',(req,res)=>{
+  
+  var body= _.pick(req.body,['email','password']);
+  var user = new User(body);
+  
+  user.save().then((user) => {
+     return user.generateAuthToken();
+
+   // res.send(userdata);
+
+  }).then((token)=>{
+     res.header('x-auth',token).send(user)
+
+  }).catch((e)=>{
+    res.status(400).send(e);
+  })
+
+
+});
+
 
 
 app.listen(3000, () => {
