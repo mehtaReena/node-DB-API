@@ -1,11 +1,12 @@
-const _= require('lodash');
+const _ = require('lodash');
 var express = require('express');
 var bodyParser = require('body-parser');
-const {ObjectID}=require('mongodb');
+const { ObjectID } = require('mongodb');
 
 var { mongoose } = require('./db/mongoose');
 var { tests } = require('./models/tests');
 var { User } = require('./models/user');
+var { authenticate } = require('./middleware/authenticate');
 
 
 var app = express();
@@ -29,117 +30,124 @@ app.post('/tests', (req, res) => {
 
 
 
-app.get('/testList',(req,res)=>{
- 
-  tests.find().then((testslist)=>{
-   res.send({testslist});
+app.get('/testList', (req, res) => {
 
-  },(err)=>{
-          res.send(err);
+  tests.find().then((testslist) => {
+    res.send({ testslist });
+
+  }, (err) => {
+    res.send(err);
   });
 
 });
 
-app.get('/getTestByID/:id',(req,res)=>{
-  var testid=req.params.id ;
-   if(!ObjectID.isValid(testid)){
+app.get('/getTestByID/:id', (req, res) => {
+  var testid = req.params.id;
+  if (!ObjectID.isValid(testid)) {
     return res.status(404).send('Invalid TestID!');
-   }
-   else{
-    tests.findById(testid).then((testData)=>{
-     if(!testData){
-      return res.status(404).send('TestID not found!');
-     }
-     else{
-       res.send({testData});
-     }
+  }
+  else {
+    tests.findById(testid).then((testData) => {
+      if (!testData) {
+        return res.status(404).send('TestID not found!');
+      }
+      else {
+        res.send({ testData });
+      }
 
-    },(err)=>{
+    }, (err) => {
 
       res.status(400).send(err);
     });
 
-   }
+  }
 
 
 
 
-},(err)=>{
+}, (err) => {
 
 
 
 });
 
-app.delete('/removeTest/:id',(req,res)=>{
-  
-  var testid=req.params.id ;
-  if(!ObjectID.isValid(testid)){
-   return res.status(404).send('Invalid TestID!');
+app.delete('/removeTest/:id', (req, res) => {
+
+  var testid = req.params.id;
+  if (!ObjectID.isValid(testid)) {
+    return res.status(404).send('Invalid TestID!');
   }
-  else{
-  tests.findByIdAndRemove(testid).then((result)=>{
-      if(!result){
+  else {
+    tests.findByIdAndRemove(testid).then((result) => {
+      if (!result) {
         return res.status(404).send('Id not found !');
       }
-      else{
-        return res.status(200).send({result});
+      else {
+        return res.status(200).send({ result });
       }
-  },(err)=>{
+    }, (err) => {
+      res.status(400).send(err);
+    });
+  }
+});
+
+
+
+app.patch('/Updatetest/:id', (req, res) => {
+  console.log(req.params.id);
+  var testid = req.params.id;
+  var body = _.pick(req.body, ['text', 'completed']);
+  if (!ObjectID.isValid(testid)) {
+    return res.status(404).send('Invalid TestID!');
+  }
+  if (_.isBoolean(body.completed) && body.completed) {
+    body.completedAt = new Date().getTime();
+    body.text = "Updated";
+  }
+  else {
+    body.completed = false;
+    body.completedAt = null;
+  }
+  tests.findByIdAndUpdate(testid, { $set: body }, { new: true }).then((Updatedresult) => {
+    if (!Updatedresult) {
+      res.status(404).send('Test Id not found !');
+    }
+    res.send(Updatedresult)
+
+  }).catch((err) => {
+
     res.status(400).send(err);
   });
-  }
-});
-
-
-
-app.patch('/Updatetest/:id',(req,res)=>{ 
-  console.log(req.params.id);
-  var testid=req.params.id ;
-  var body= _.pick(req.body,['text','completed']);
-  if(!ObjectID.isValid(testid)){
-    return res.status(404).send('Invalid TestID!');
-   }
-   if(_.isBoolean(body.completed) && body.completed){
-          body.completedAt=new Date().getTime();
-          body.text="Updated";
-   }
-   else{
-        body.completed=false;
-        body.completedAt=null;
-   }
-tests.findByIdAndUpdate(testid ,{$set:body},{new:true}).then((Updatedresult)=>{
-  if(!Updatedresult){
-    res.status(404).send('Test Id not found !');
-  }
-   res.send(Updatedresult)
-
-}).catch((err)=>{
-
-  res.status(400).send(err);
-});
 
 });
 
 /*   Post for Users....      */
 
-app.post('/user',(req,res)=>{
-  
-  var body= _.pick(req.body,['email','password']);
+app.post('/user', (req, res) => {
+
+  var body = _.pick(req.body, ['email', 'password']);
   var user = new User(body);
-  
+
   user.save().then((user) => {
-     return user.generateAuthToken();
+    return user.generateAuthToken();
 
-   // res.send(userdata);
+    // res.send(userdata);
 
-  }).then((token)=>{
-     res.header('x-auth',token).send(user)
+  }).then((token) => {
+    res.header('x-auth', token).send(user)
 
-  }).catch((e)=>{
+  }).catch((e) => {
     res.status(400).send(e);
   })
 
 
+});
+
+
+
+
+app.get('/users/me',authenticate, (req, res) => {
+  res.send(req.user)
 });
 
 
